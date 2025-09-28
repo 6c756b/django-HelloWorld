@@ -56,13 +56,15 @@ python manage.py migrate
 python manage.py createsuperuser
 ```
 
-# Run the Server
-```Terminal
-python manage.py runserver localhost:9000
-```
-
 # Migrations
 ```Terminal
 python manage.py makemigrations
 python manage.py migrate 
+```
+
+# Run the Server
+```Terminal
+mysql.server start
+source venv/bin/activate
+python manage.py runserver localhost:9000
 ```

@@ -89,9 +89,13 @@ def dashboard(request):
 
     categories = Category.objects.filter(user=request.user)
 
+    # Modify income and expense form dates to display a placeholder
+    income_form.fields['date_received'].widget.attrs.update({'placeholder': 'YYYY-MM-DD'})
+    expense_form.fields['date_incurred'].widget.attrs.update({'placeholder': 'YYYY-MM-DD'})
+
     context = {
         'income_data': income_data,
-        'expense_data': expense_data,
+        'expenses_data': expense_data,
         'total_income': sum(income_data),
         'total_expense': abs(sum(expense_data)),
         'current_balance': sum((sum(income_data), sum(expense_data))),
@@ -201,3 +205,6 @@ def update_record(request, record_type, record_id):
                 got_expense.description = form.cleaned_data['description']
                 got_expense.save()
     return redirect('dashboard')
+
+def offline(request):
+    return render(request=request, template_name='app/general/offline.html')

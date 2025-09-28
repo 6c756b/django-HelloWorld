@@ -1,0 +1,19 @@
+{% load static %}
+
+<header>
+    <div class="row header-row">
+        <div class="col-1"></div>
+        <div class="col header-col-left">
+            <img class="logo-img" alt="Logo" src="{% static 'app/img/logo.jpg' %}" />
+        </div>
+
+        {% if request.user.is_authenticated %}
+        <div class="col header-col-right text-end pt-2">
+            <a href="{% url 'dashboard' %}"><i class="fa-solid fa-user-secret nav-icon mx-4" style="color: #FFFFFF;"></i></a>
+            <a class='logout' href="{% url 'logout' %}"><i class="fa-solid fa-right-from-bracket nav-icon" style="color: brown;"></i></a>
+        </div>
+        {% endif %}
+
+        <div class="col-1"></div>
+    </div>
+</header>
