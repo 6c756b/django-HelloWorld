@@ -84,8 +84,8 @@ def dashboard(request):
         income_monthly_data[month] += expense.amount
     expense_data = [-float(y) if y > 0 else float(y) for y in expense_monthly_data.values()]
 
-    combined_records = list(chain(income, expense))
-    sorted_records = sortec(combined_records, key=lambda x: x.created_at)
+    combined_records = list(chain(incomes, expenses))
+    sorted_records = sorted(combined_records, key=lambda x: x.created_at)
 
     categories = Category.objects.filter(user=request.user)
 
@@ -95,7 +95,7 @@ def dashboard(request):
         'total_income': sum(income_data),
         'total_expense': abs(sum(expense_data)),
         'current_balance': sum((sum(income_data), sum(expense_data))),
-        'months': month,
+        'months': months,
         'income_form': income_form,
         'expense_form': expense_form,
         'category_form': category_form,
@@ -106,7 +106,7 @@ def dashboard(request):
         'sorted_records': sorted_records,
     }
 
-    return render(request=request, template_name='app/general/dashboard.html', content=context)
+    return render(request=request, template_name='app/general/dashboard.html', context=context)
 
 # ------------------ INCOME
 @login_required
