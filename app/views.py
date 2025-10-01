@@ -17,11 +17,14 @@ def register(request):
 
         if form.is_valid():
             user = form.save()
+
             login(request, user)
+
             return JsonResponse({'success': True})
-    
+        
     return redirect('index')
- 
+
+
 def log_in(request):
     if request.method == 'POST':
         username = request.POST.get('username')
@@ -31,22 +34,27 @@ def log_in(request):
 
         if authenticateUser is not None:
             login(request, authenticateUser)
+
             return JsonResponse({'success': True})
         
         return JsonResponse({'success': False, 'password_error': 'Invalid username or password!'})
-
+    
     return redirect('index')
+
 
 @login_required
 def log_out(request):
     logout(request)
+
     return redirect('index')
+
 
 def index(request):
     if request.user.is_authenticated:
         return redirect('dashboard')
-
+    
     registration_form = RegistrationForm()
+
     login_form = AuthenticationForm()
 
     context = {
@@ -56,10 +64,12 @@ def index(request):
 
     return render(request=request, template_name='app/general/index.html', context=context)
 
+
 @login_required
 def dashboard(request):
-    months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
-
+    months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August',
+              'September', 'October', 'November', 'December']
+    
     income_form = IncomeForm()
     expense_form = ExpenseForm()
     category_form = CategoryForm()
@@ -73,23 +83,30 @@ def dashboard(request):
         expense_monthly_data[month] = 0
 
     incomes = Income.objects.filter(user=request.user)
+
     for income in incomes:
         month = income.date_received.strftime('%B')
+
         income_monthly_data[month] += income.amount
+
     income_data = [float(y) for y in income_monthly_data.values()]
 
     expenses = Expense.objects.filter(user=request.user)
+
     for expense in expenses:
-        month = expense.date_received.strftime('%B')
-        income_monthly_data[month] += expense.amount
+        month = expense.date_incurred.strftime('%B')
+
+        expense_monthly_data[month] += expense.amount
+
     expense_data = [-float(y) if y > 0 else float(y) for y in expense_monthly_data.values()]
 
     combined_records = list(chain(incomes, expenses))
+
     sorted_records = sorted(combined_records, key=lambda x: x.created_at)
 
     categories = Category.objects.filter(user=request.user)
 
-    # Modify income and expense form dates to display a placeholder
+    # Modify income and expense form dates to display a place holder.
     income_form.fields['date_received'].widget.attrs.update({'placeholder': 'YYYY-MM-DD'})
     expense_form.fields['date_incurred'].widget.attrs.update({'placeholder': 'YYYY-MM-DD'})
 
@@ -112,53 +129,70 @@ def dashboard(request):
 
     return render(request=request, template_name='app/general/dashboard.html', context=context)
 
-# ------------------ INCOME
+
 @login_required
 def create_income(request):
     if request.method == 'POST':
         form = IncomeForm(request.POST)
+
         if form.is_valid():
             income = form.save(commit=False)
+
             income.user = request.user
+
             income.save()
-            return JsonResponse({'success': True})
-    
+
+            return JsonResponse({'succes': True})
+        
+        print(form)
+
     return JsonResponse({'success': False})
+
 
 @login_required
 def delete_income(request, income_id):
     if request.method == 'DELETE':
         income = Income.objects.filter(id=income_id, user=request.user).last()
+
         if income:
             income.delete()
+
             return JsonResponse({'success': True})
-    
+
     return redirect('dashboard')
 
-# ------------------ EXPENSE
+
 @login_required
 def create_expense(request):
     if request.method == 'POST':
         form = ExpenseForm(request.POST)
+
         if form.is_valid():
             expense = form.save(commit=False)
+
             expense.user = request.user
+
             expense.save()
+
             return JsonResponse({'success': True})
-    
+
     return JsonResponse({'success': False})
+
+
 
 @login_required
 def delete_expense(request, expense_id):
     if request.method == 'DELETE':
         expense = Expense.objects.filter(id=expense_id, user=request.user).last()
+
         if expense:
             expense.delete()
+
             return JsonResponse({'success': True})
-    
+
     return redirect('dashboard')
 
-# ------------------ CATEGORY
+
 @login_required
 def create_category(request):
     if request.method == 'POST':
@@ -166,24 +200,31 @@ def create_category(request):
 
         if form.is_valid():
             category = form.save(commit=False)
+
             category.user = request.user
+
             category.save()
-            return JsonResponse({'success': True})
-    
-    #return JsonResponse({'success': False})
+
+            # return JsonResponse({'success': True})
+
+    # return JsonResponse({'success': False})
     return redirect('dashboard')
+
 
 @login_required
 def delete_category(request, category_id):
     if request.method == 'DELETE':
         category = Category.objects.filter(id=category_id, user=request.user).last()
+
         if category:
             category.delete()
+
             return JsonResponse({'success': True})
-    
+
     return redirect('dashboard')
 
-# ------------------ UPDATE REC
+
+
 @login_required
 def update_record(request, record_type, record_id):
     if request.method == 'POST':
@@ -191,20 +232,26 @@ def update_record(request, record_type, record_id):
 
         if record_type == 'income':
             got_income = Income.objects.filter(user=request.user, id=record_id).last()
+
             if form.is_valid() and got_income:
                 got_income.amount = form.cleaned_data['amount']
                 got_income.category = form.cleaned_data['category']
                 got_income.description = form.cleaned_data['description']
+
                 got_income.save()
 
         elif record_type == 'expense':
             got_expense = Expense.objects.filter(user=request.user, id=record_id).last()
+
             if form.is_valid() and got_expense:
                 got_expense.amount = form.cleaned_data['amount']
                 got_expense.category = form.cleaned_data['category']
                 got_expense.description = form.cleaned_data['description']
+
                 got_expense.save()
+
     return redirect('dashboard')
+
 
 def offline(request):
     return render(request=request, template_name='app/general/offline.html')
